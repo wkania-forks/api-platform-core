@@ -55,6 +55,7 @@ use ApiPlatform\Core\Bridge\Elasticsearch\DataProvider\Filter\OrderFilter as Ela
 use ApiPlatform\Core\Bridge\Elasticsearch\DataProvider\Filter\TermFilter;
 use ApiPlatform\Core\Bridge\Elasticsearch\Metadata\Document\Factory\DocumentMetadataFactoryInterface;
 use ApiPlatform\Core\Bridge\Symfony\Bundle\DependencyInjection\ApiPlatformExtension;
+use ApiPlatform\Core\Bridge\Symfony\Validator\Metadata\Property\Restriction\PropertySchemaRestrictionMetadataInterface;
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use ApiPlatform\Core\DataProvider\CollectionDataProviderInterface;
 use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
@@ -342,6 +343,7 @@ class ApiPlatformExtensionTest extends TestCase
         $containerBuilderProphecy->setDefinition('api_platform.graphql.action.graphql_playground', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.graphql.resolver.factory.collection', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.graphql.resolver.factory.item_mutation', Argument::type(Definition::class))->shouldNotBeCalled();
+        $containerBuilderProphecy->setDefinition('api_platform.graphql.resolver.factory.item_subscription', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.graphql.resolver.factory.item', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.graphql.resolver.stage.read', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.graphql.resolver.stage.security', Argument::type(Definition::class))->shouldNotBeCalled();
@@ -371,7 +373,11 @@ class ApiPlatformExtensionTest extends TestCase
         $containerBuilderProphecy->setDefinition('api_platform.graphql.normalizer.validation_exception', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.graphql.normalizer.http_exception', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.graphql.normalizer.runtime_exception', Argument::type(Definition::class))->shouldNotBeCalled();
+        $containerBuilderProphecy->setDefinition('api_platform.graphql.subscription.subscription_manager', Argument::type(Definition::class))->shouldNotBeCalled();
+        $containerBuilderProphecy->setDefinition('api_platform.graphql.subscription.subscription_identifier_generator', Argument::type(Definition::class))->shouldNotBeCalled();
+        $containerBuilderProphecy->setDefinition('api_platform.graphql.cache.subscription', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.graphql.command.export_command', Argument::type(Definition::class))->shouldNotBeCalled();
+        $containerBuilderProphecy->setDefinition('api_platform.graphql.subscription.mercure_iri_generator', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setParameter('api_platform.graphql.enabled', true)->shouldNotBeCalled();
         $containerBuilderProphecy->setParameter('api_platform.graphql.enabled', false)->shouldBeCalled();
         $containerBuilderProphecy->setParameter('api_platform.graphql.default_ide', 'graphiql')->shouldNotBeCalled();
@@ -596,7 +602,7 @@ class ApiPlatformExtensionTest extends TestCase
         $containerBuilderProphecy->setDefinition('api_platform.doctrine.orm.range_filter', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.doctrine.orm.search_filter', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.doctrine.orm.subresource_data_provider', Argument::type(Definition::class))->shouldNotBeCalled();
-        $containerBuilderProphecy->setDefinition('api_platform.doctrine.listener.mercure.publish', Argument::type(Definition::class))->shouldNotBeCalled();
+        $containerBuilderProphecy->setDefinition('api_platform.doctrine.orm.listener.mercure.publish', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setAlias(EagerLoadingExtension::class, 'api_platform.doctrine.orm.query_extension.eager_loading')->shouldNotBeCalled();
         $containerBuilderProphecy->setAlias(FilterExtension::class, 'api_platform.doctrine.orm.query_extension.filter')->shouldNotBeCalled();
         $containerBuilderProphecy->setAlias(FilterEagerLoadingExtension::class, 'api_platform.doctrine.orm.query_extension.filter_eager_loading')->shouldNotBeCalled();
@@ -609,6 +615,7 @@ class ApiPlatformExtensionTest extends TestCase
         $containerBuilderProphecy->setAlias(BooleanFilter::class, 'api_platform.doctrine.orm.boolean_filter')->shouldNotBeCalled();
         $containerBuilderProphecy->setAlias(NumericFilter::class, 'api_platform.doctrine.orm.numeric_filter')->shouldNotBeCalled();
         $containerBuilderProphecy->setAlias(ExistsFilter::class, 'api_platform.doctrine.orm.exists_filter')->shouldNotBeCalled();
+        $containerBuilderProphecy->setAlias('api_platform.doctrine.listener.mercure.publish', 'api_platform.doctrine.orm.listener.mercure.publish')->shouldNotBeCalled();
         $containerBuilder = $containerBuilderProphecy->reveal();
 
         $config = self::DEFAULT_CONFIG;
@@ -648,6 +655,7 @@ class ApiPlatformExtensionTest extends TestCase
         $containerBuilderProphecy->setDefinition('api_platform.doctrine_mongodb.odm.range_filter', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.doctrine_mongodb.odm.search_filter', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setDefinition('api_platform.doctrine_mongodb.odm.subresource_data_provider', Argument::type(Definition::class))->shouldNotBeCalled();
+        $containerBuilderProphecy->setDefinition('api_platform.doctrine_mongodb.odm.listener.mercure.publish', Argument::type(Definition::class))->shouldNotBeCalled();
         $containerBuilderProphecy->setAlias(MongoDbOdmFilterExtension::class, 'api_platform.doctrine_mongodb.odm.aggregation_extension.filter')->shouldNotBeCalled();
         $containerBuilderProphecy->setAlias(MongoDbOdmOrderExtension::class, 'api_platform.doctrine_mongodb.odm.aggregation_extension.order')->shouldNotBeCalled();
         $containerBuilderProphecy->setAlias(MongoDbOdmPaginationExtension::class, 'api_platform.doctrine_mongodb.odm.aggregation_extension.pagination')->shouldNotBeCalled();
@@ -936,6 +944,7 @@ class ApiPlatformExtensionTest extends TestCase
             'api_platform.metadata.resource.metadata_factory.xml',
             'api_platform.metadata.resource.name_collection_factory.cached',
             'api_platform.metadata.resource.name_collection_factory.xml',
+            'api_platform.metadata.property.metadata_factory.default_property',
             'api_platform.negotiator',
             'api_platform.operation_method_resolver',
             'api_platform.operation_path_resolver.custom',
@@ -1081,6 +1090,10 @@ class ApiPlatformExtensionTest extends TestCase
             ->willReturn($this->childDefinitionProphecy)->shouldBeCalledTimes(1);
         $this->childDefinitionProphecy->setBindings(['$requestStack' => null])->shouldBeCalledTimes(1);
 
+        $containerBuilderProphecy->registerForAutoconfiguration(PropertySchemaRestrictionMetadataInterface::class)
+            ->willReturn($this->childDefinitionProphecy)->shouldBeCalledTimes(1);
+        $this->childDefinitionProphecy->addTag('api_platform.metadata.property_schema_restriction')->shouldBeCalledTimes(1);
+
         if (\in_array('odm', $doctrineIntegrationsToLoad, true)) {
             $containerBuilderProphecy->registerForAutoconfiguration(AggregationItemExtensionInterface::class)
                 ->willReturn($this->childDefinitionProphecy)->shouldBeCalledTimes(1);
@@ -1145,7 +1158,7 @@ class ApiPlatformExtensionTest extends TestCase
         $definitions = [
             'api_platform.data_collector.request',
             'api_platform.doctrine.listener.http_cache.purge',
-            'api_platform.doctrine.listener.mercure.publish',
+            'api_platform.doctrine.orm.listener.mercure.publish',
             'api_platform.doctrine.orm.boolean_filter',
             'api_platform.doctrine.orm.collection_data_provider',
             'api_platform.doctrine.orm.data_persister',
@@ -1177,6 +1190,7 @@ class ApiPlatformExtensionTest extends TestCase
             'api_platform.graphql.resolver.factory.item',
             'api_platform.graphql.resolver.factory.collection',
             'api_platform.graphql.resolver.factory.item_mutation',
+            'api_platform.graphql.resolver.factory.item_subscription',
             'api_platform.graphql.resolver.stage.read',
             'api_platform.graphql.resolver.stage.security',
             'api_platform.graphql.resolver.stage.security_post_denormalize',
@@ -1200,7 +1214,11 @@ class ApiPlatformExtensionTest extends TestCase
             'api_platform.graphql.normalizer.item',
             'api_platform.graphql.normalizer.object',
             'api_platform.graphql.serializer.context_builder',
+            'api_platform.graphql.subscription.subscription_manager',
+            'api_platform.graphql.subscription.subscription_identifier_generator',
+            'api_platform.graphql.cache.subscription',
             'api_platform.graphql.command.export_command',
+            'api_platform.graphql.subscription.mercure_iri_generator',
             'api_platform.hal.encoder',
             'api_platform.hal.normalizer.collection',
             'api_platform.hal.normalizer.entrypoint',
@@ -1218,6 +1236,9 @@ class ApiPlatformExtensionTest extends TestCase
             'api_platform.metadata.extractor.yaml',
             'api_platform.metadata.property.metadata_factory.annotation',
             'api_platform.metadata.property.metadata_factory.validator',
+            'api_platform.metadata.property_schema.length_restriction',
+            'api_platform.metadata.property_schema.regex_restriction',
+            'api_platform.metadata.property_schema.format_restriction',
             'api_platform.metadata.property.metadata_factory.yaml',
             'api_platform.metadata.property.name_collection_factory.yaml',
             'api_platform.metadata.resource.filter_metadata_factory.annotation',
@@ -1235,11 +1256,13 @@ class ApiPlatformExtensionTest extends TestCase
             'api_platform.swagger.action.ui',
             'api_platform.swagger.listener.ui',
             'api_platform.validator',
+            'api_platform.validator.query_parameter_validator',
             'test.api_platform.client',
         ];
 
         if (\in_array('odm', $doctrineIntegrationsToLoad, true)) {
             $definitions = array_merge($definitions, [
+                'api_platform.doctrine_mongodb.odm.listener.mercure.publish',
                 'api_platform.doctrine_mongodb.odm.aggregation_extension.filter',
                 'api_platform.doctrine_mongodb.odm.aggregation_extension.order',
                 'api_platform.doctrine_mongodb.odm.aggregation_extension.pagination',
@@ -1321,6 +1344,7 @@ class ApiPlatformExtensionTest extends TestCase
             BooleanFilter::class => 'api_platform.doctrine.orm.boolean_filter',
             NumericFilter::class => 'api_platform.doctrine.orm.numeric_filter',
             ExistsFilter::class => 'api_platform.doctrine.orm.exists_filter',
+            'api_platform.doctrine.listener.mercure.publish' => 'api_platform.doctrine.orm.listener.mercure.publish',
             GraphQlSerializerContextBuilderInterface::class => 'api_platform.graphql.serializer.context_builder',
         ];
 
@@ -1357,7 +1381,9 @@ class ApiPlatformExtensionTest extends TestCase
         $definitionDummy = $this->prophesize(Definition::class);
         $containerBuilderProphecy->removeDefinition('api_platform.cache_warmer.cache_pool_clearer')->will(function () {});
         $containerBuilderProphecy->getDefinition('api_platform.mercure.listener.response.add_link_header')->willReturn($definitionDummy);
-        $containerBuilderProphecy->getDefinition('api_platform.doctrine.listener.mercure.publish')->willReturn($definitionDummy);
+        $containerBuilderProphecy->getDefinition('api_platform.doctrine.orm.listener.mercure.publish')->willReturn($definitionDummy);
+        $containerBuilderProphecy->getDefinition('api_platform.doctrine_mongodb.odm.listener.mercure.publish')->willReturn($definitionDummy);
+        $containerBuilderProphecy->getDefinition('api_platform.graphql.subscription.mercure_iri_generator')->willReturn($definitionDummy);
 
         return $containerBuilderProphecy;
     }

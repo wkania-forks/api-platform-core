@@ -1,7 +1,7 @@
 version: 2.1
 
 .constants:
-  - &ext-mongodb-version '1.6.0'
+  - &ext-mongodb-version '1.6.1'
 
 commands:
   clear-test-app-cache:
@@ -183,8 +183,6 @@ executors:
         type: string
     docker:
       - image: circleci/php:<< parameters.php_version >>-node
-        environment:
-          SYMFONY_REQUIRE: ^3.4 || ^4.0 || ^5.0
 
 jobs:
   php-cs-fixer:

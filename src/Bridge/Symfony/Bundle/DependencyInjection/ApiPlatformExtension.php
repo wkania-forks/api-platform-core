@@ -23,6 +23,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInter
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter as DoctrineOrmAbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Elasticsearch\DataProvider\Extension\RequestBodySearchCollectionExtensionInterface;
+use ApiPlatform\Core\Bridge\Symfony\Validator\Metadata\Property\Restriction\PropertySchemaRestrictionMetadataInterface;
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use ApiPlatform\Core\DataProvider\CollectionDataProviderInterface;
 use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
@@ -553,6 +554,8 @@ final class ApiPlatformExtension extends Extension implements PrependExtensionIn
     {
         if (interface_exists(ValidatorInterface::class)) {
             $loader->load('validator.xml');
+            $container->registerForAutoconfiguration(PropertySchemaRestrictionMetadataInterface::class)
+                      ->addTag('api_platform.metadata.property_schema_restriction');
         }
 
         if (!$config['validator']) {
@@ -586,6 +589,14 @@ final class ApiPlatformExtension extends Extension implements PrependExtensionIn
 
         if ($this->isConfigEnabled($container, $config['doctrine'])) {
             $loader->load('doctrine_orm_mercure_publisher.xml');
+        }
+        if ($this->isConfigEnabled($container, $config['doctrine_mongodb_odm'])) {
+            $loader->load('doctrine_mongodb_odm_mercure_publisher.xml');
+        }
+
+        if ($this->isConfigEnabled($container, $config['graphql'])) {
+            $loader->load('graphql_mercure.xml');
+            $container->getDefinition('api_platform.graphql.subscription.mercure_iri_generator')->addArgument($config['mercure']['hub_url'] ?? '%mercure.default_hub%');
         }
     }
 
