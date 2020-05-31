@@ -29,6 +29,7 @@ use ApiPlatform\Core\Exception\InvalidArgumentException;
  *     @Attribute("openapiContext", type="array"),
  *     @Attribute("jsonldContext", type="array"),
  *     @Attribute("push", type="bool"),
+ *     @Attribute("security", type="string"),
  *     @Attribute("swaggerContext", type="array")
  * )
  */
@@ -77,12 +78,12 @@ final class ApiProperty
     public $identifier;
 
     /**
-     * @var mixed
+     * @var string|int|float|bool|array|null
      */
     public $default;
 
     /**
-     * @var mixed
+     * @var string|int|float|bool|array|null
      */
     public $example;
 
@@ -127,6 +128,13 @@ final class ApiProperty
      * @var bool
      */
     private $push;
+
+    /**
+     * @see https://github.com/Haehnchen/idea-php-annotation-plugin/issues/112
+     *
+     * @var string
+     */
+    private $security;
 
     /**
      * @see https://github.com/Haehnchen/idea-php-annotation-plugin/issues/112
